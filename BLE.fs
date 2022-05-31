@@ -11,7 +11,7 @@ type BluetoothError =
     | CouldNotOpenService of bluetoothAddress: uint64 * serviceUuid: Guid * status: GattOpenStatus
     | InvalidCharacteristic of bluetoothAddress: uint64 * serviceUuid: Guid * characteristicUuid: Guid
     | CouldNotReadBytes of bluetoothAddress: uint64 * serviceUuid: Guid * characteristicUuid: Guid
-    | CouldNotWriteBytes of bluetoothAddress: uint64 * serviceUuid: Guid * characteristicUuid: Guid
+    | CouldNotWriteBytes of bluetoothAddress: uint64 * serviceUuid: Guid * characteristicUuid: Guid * bytes: byte[]
 
 let getDevice bluetoothAddress = task {
     match! BluetoothLEDevice.FromBluetoothAddressAsync(bluetoothAddress).AsTask() with
@@ -67,7 +67,7 @@ let writeBytes bytes (characteristic: GattCharacteristic) = task {
     if res = GattCommunicationStatus.Success then
         return Ok ()
     else
-        return Error (CouldNotWriteBytes (characteristic.Service.Device.BluetoothAddress, characteristic.Service.Uuid, characteristic.Uuid))
+        return Error (CouldNotWriteBytes (characteristic.Service.Device.BluetoothAddress, characteristic.Service.Uuid, characteristic.Uuid, bytes))
 }
 
 let listAllServices (device: BluetoothLEDevice) =
