@@ -75,7 +75,7 @@ let moveDown bluetoothAddress =
 let stop bluetoothAddress =
     move Constants.COMMAND_STOP bluetoothAddress
 
-let moveToTarget targetHeight bluetoothAddress = taskResult {
+let moveToTargetHeight targetHeight bluetoothAddress = taskResult {
     let getHeight = getHeight >> TaskResult.mapError BluetoothError
     let moveUp = moveUp >> TaskResult.mapError BluetoothError
     let moveDown = moveDown >> TaskResult.mapError BluetoothError
@@ -108,6 +108,6 @@ let moveToTarget targetHeight bluetoothAddress = taskResult {
                 do! moveDown bluetoothAddress
             else ()
             previousHeight <- height
-        return! Ok ()
+        return! Ok previousHeight
 }
 
