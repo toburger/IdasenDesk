@@ -43,14 +43,6 @@ let isDesk bluetoothAddress = taskResult {
         |> Seq.exists (fun s -> s.Uuid = Constants.UUID_ADV_SVC)
 }
 
-//let getHeight' bluetoothAddress =
-//    bluetoothAddress
-//    |> getDevice
-//    |> TaskResult.bind (getGattService Constants.UUID_HEIGHT_SVC)
-//    |> TaskResult.bind (getCharacteristic Constants.UUID_HEIGHT)
-//    |> TaskResult.bind readBytes
-//    |> TaskResult.map bytesToMeters
-
 let getHeight bluetoothAddress = taskResult {
     let! device = getDevice bluetoothAddress
     let! service = getGattService Constants.UUID_HEIGHT_SVC device
