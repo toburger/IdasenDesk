@@ -1,4 +1,5 @@
 ﻿open Argu
+open Spectre.Console
 
 type MoveArg =
     | [<MainCommand>] TargetHeight of float
@@ -26,6 +27,7 @@ type CatchAllArg =
 type Argument =
     | [<CliPrefix(CliPrefix.None)>] Move of ParseResults<MoveArg>
     | [<CliPrefix(CliPrefix.None)>] Height of ParseResults<NoopArg>
+    | [<CliPrefix(CliPrefix.None)>] Discover of ParseResults<NoopArg>
     | [<CliPrefix(CliPrefix.None)>] Serve of ParseResults<CatchAllArg>
     | [<Inherit; MainCommand; First>] BluetoothAddress of uint64
 
@@ -34,6 +36,7 @@ type Argument =
             match this with
             | Move _ -> "Move the desktop to the desired height"
             | Height _ -> "Read the current height"
+            | Discover _ -> "Discover your Idåsen Desks"
             | Serve _ -> "Start a web server that listens on a specific port"
             | BluetoothAddress _ -> "The address"
 
@@ -66,6 +69,39 @@ let main argv =
         | Error err ->
             eprintfn $"%A{err}"
             -1
+
+    | Discover _ ->
+        let watcher = BLE.BLEAdvertisementWatcher()
+        watcher.Start()
+        printfn "Discovering..."
+        let table = Table()
+        AnsiConsole.Live(table).Start(fun ctx ->
+            table.AddColumn(TableColumn "Address") |> ignore
+            table.AddColumn(TableColumn("Name", Width = 20)) |> ignore
+            table.AddColumn(TableColumn "Is Idåsen desk") |> ignore
+
+            ctx.Refresh()
+
+            for _ in 1..5 do
+                System.Threading.Thread.Sleep 1000
+
+                table.Rows.Clear()
+                for device in watcher.Devices do
+                    let isDesk =
+                        match (Idasen.isDesk device.Address).Result with
+                        | Ok true -> ":check_mark_button:"
+                        | _ -> ""
+                    table.AddRow(
+                        Markup(string device.Address),
+                        Markup device.Name,
+                        Markup(isDesk).Centered()
+                    ) |> ignore
+
+                ctx.Refresh()
+
+        )
+        watcher.Stop()
+        0
 
     | Serve _ ->
         WebServer.serve argv
