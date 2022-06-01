@@ -8,4 +8,4 @@ Command line tool to move the Ikea Idåsen Desk to a desired target height.
 
 `idasen.exe <bluetooth-address> move <height-in-m>`
 
-`idasen.exe serve --urls http://localhost:8888`
+`idasen.exe serve --urls http://*:8888`
