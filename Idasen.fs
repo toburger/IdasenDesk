@@ -82,24 +82,25 @@ let moveToTargetHeight targetHeight bluetoothAddress = taskResult {
         let! height = getHeight bluetoothAddress
         previousHeight <- height
         let willMoveUp = targetHeight > previousHeight
-        let mutable continue' = true
-        while continue' do
+        let mutable continue' = Ok true
+        while continue' = Ok true do
             let! height = getHeight bluetoothAddress
             let difference = targetHeight - height
             if (height < previousHeight && willMoveUp) ||
                (height > previousHeight && not willMoveUp) then
-                printfn "Stopped moving because desk safety feature kicked in"
-                continue' <- false
+                continue' <- Error (IdasenError "Stopped moving because desk safety feature kicked in")
             elif abs difference < 0.005 then //Tolerance of 0.005 meters
                 printfn $"Reached target of %0.2f{targetHeight}"
                 do! stop bluetoothAddress
-                continue' <- false
+                continue' <- Ok false
             elif difference > 0.0 then
                 do! moveUp bluetoothAddress
             elif difference < 0.0 then
                 do! moveDown bluetoothAddress
             else ()
             previousHeight <- height
-        return! Ok previousHeight
+        match continue' with
+        | Error error -> return! Error error
+        | Ok _ -> return! Ok previousHeight
 }
 
