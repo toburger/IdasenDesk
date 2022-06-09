@@ -9,17 +9,16 @@
   <ItemGroup>
     <Compile Include="BLE.fs" />
     <Compile Include="Idasen.fs" />
-    <Compile Include="FSharpLuJsonSerializer.fs" />
     <Compile Include="WebServer.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Argu" Version="6.1.1" />
+    <PackageReference Include="FSharp.SystemTextJson" Version="0.18.24" />
     <PackageReference Include="FsToolkit.ErrorHandling.TaskResult" Version="3.0.0-beta007" />
     <PackageReference Include="Giraffe" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="6.0.0" />
-    <PackageReference Include="Microsoft.FSharpLU.Json" Version="0.11.7" />
     <PackageReference Include="Spectre.Console" Version="0.44.0" />
   </ItemGroup>
 

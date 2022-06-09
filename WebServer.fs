@@ -8,6 +8,7 @@ open Microsoft.Extensions.DependencyInjection
 open Microsoft.Extensions.Hosting
 open Microsoft.Extensions.Logging
 open Giraffe
+open System.Text.Json.Serialization
 
 let errorHandler (ex : Exception) (logger : ILogger) =
     logger.LogError(ex, "An unhandled exception has occurred while executing the request.")
@@ -61,8 +62,13 @@ let configureApp (app: IApplicationBuilder) =
     app.UseGiraffe(webApp) |> ignore
 
 let configureServices (services: IServiceCollection) =
-    services.AddSingleton<Json.ISerializer, Serializer.FSharpLuJsonSerializer>() |> ignore
     services.AddGiraffe() |> ignore
+    let serializationOptions = SystemTextJson.Serializer.DefaultOptions
+    serializationOptions.Converters.Add(
+        JsonFSharpConverter(
+            JsonUnionEncoding.FSharpLuLike,
+            unionTagNamingPolicy = Text.Json.JsonNamingPolicy.CamelCase))
+    services.AddSingleton<Json.ISerializer>(SystemTextJson.Serializer(serializationOptions)) |> ignore
 
 let serve argv =
         Host.CreateDefaultBuilder(argv)
