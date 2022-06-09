@@ -61,6 +61,7 @@ let configureApp (app: IApplicationBuilder) =
     app.UseGiraffe(webApp) |> ignore
 
 let configureServices (services: IServiceCollection) =
+    services.AddSingleton<Json.ISerializer, Serializer.FSharpLuJsonSerializer>() |> ignore
     services.AddGiraffe() |> ignore
 
 let serve argv =
