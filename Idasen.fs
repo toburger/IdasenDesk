@@ -4,9 +4,14 @@ open System
 open FsToolkit.ErrorHandling
 open BLE
 
+type IdasenError =
+    | MaxHeightExceeded of maxHeight: float * currentHeight: float
+    | MinHeightExceeded of minHeight: float * currentHeight: float
+    | SafetyFeatureKickedIn
+
 type Error =
     | BluetoothError of BLE.BluetoothError
-    | IdasenError of string
+    | IdasenError of IdasenError
 
 type Constants =
     static member UUID_HEIGHT_SVC      = Guid "99fa0020-338a-1024-8a49-009c0215f78a"
@@ -74,9 +79,9 @@ let moveToTargetHeight targetHeight bluetoothAddress = taskResult {
     let stop = stop >> TaskResult.mapError BluetoothError
 
     if targetHeight > Constants.MAX_HEIGHT then
-        return! Error (IdasenError $"Target position of %0.2f{targetHeight} meters exceeds maximum of %0.2f{Constants.MAX_HEIGHT}")
+        return! Error (IdasenError (MaxHeightExceeded (Constants.MAX_HEIGHT, targetHeight)))
     elif targetHeight < Constants.MIN_HEIGHT then
-        return! Error (IdasenError $"Target position of %0.2f{targetHeight} meters exceeds minimum of %0.2f{Constants.MIN_HEIGHT}")
+        return! Error (IdasenError (MinHeightExceeded (Constants.MIN_HEIGHT, targetHeight)))
     else
         let mutable previousHeight = 0.0
         let! height = getHeight bluetoothAddress
@@ -88,7 +93,7 @@ let moveToTargetHeight targetHeight bluetoothAddress = taskResult {
             let difference = targetHeight - height
             if (height < previousHeight && willMoveUp) ||
                (height > previousHeight && not willMoveUp) then
-                continue' <- Error (IdasenError "Stopped moving because desk safety feature kicked in")
+                continue' <- Error (IdasenError SafetyFeatureKickedIn)
             elif abs difference < 0.005 then //Tolerance of 0.005 meters
                 printfn $"Reached target of %0.2f{targetHeight}"
                 do! stop bluetoothAddress
